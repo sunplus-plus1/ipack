@@ -3,17 +3,20 @@
 # $1: image name
 # $2: source image
 # $3: output image
-# $4: load address    (optional)
-# $5: execute address (optional)
+# $4: arm or riscv
+# $5: load address    (optional)
+# $6: execute address (optional)
 
 NAME="$1"
 SRC="$2"
 OUTPUT="$3"
-LADDR=$4
-RADDR=$5
+ARCH="$4"
+LADDR=$5
+RADDR=$6
 
 ####################
 # check if mkimage is available?
+
 MKIMAGE=./tools/mkimage_sp   # Only our mkimage supports quickboot
 TYPE=quickboot
 
@@ -65,6 +68,6 @@ if [ ! -f "$SRC" ];then
 	exit 1
 fi
 
-$MKIMAGE -A arm -O linux -T $TYPE -C none -a $LADDR -e $RADDR -n $NAME -d $SRC $OUTPUT
+$MKIMAGE -A $ARCH -O linux -T $TYPE -C none -a $LADDR -e $RADDR -n $NAME -d $SRC $OUTPUT
 
 ls -l $OUTPUT

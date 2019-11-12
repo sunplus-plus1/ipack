@@ -8,9 +8,9 @@ ISP_IMG    := ispbooot.BIN
 EMMC_BOOT1 := emmc_boot1.hex
 EMMC_USER  := emmc_user0.hex
 
-BOOT_KERNEL_FROM_TFTP ?=
-TFTP_SERVER_PATH ?=
-
+BOOT_KERNEL_FROM_TFTP ?= 0
+TFTP_SERVER_PATH ?= 0
+ARCH_IS_ARM ?= 0
 all: $(SPI_ALL)
 
 config:
@@ -18,7 +18,7 @@ config:
 
 $(SPI_ALL):
 	make config
-	bash ./update_all.sh $(SPI_ALL) $(ZEBU_RUN) $(BOOT_KERNEL_FROM_TFTP)
+	bash ./update_all.sh $(SPI_ALL) $(ZEBU_RUN) $(BOOT_KERNEL_FROM_TFTP) $(ARCH_IS_ARM) 
 	@if [ "$(ZEBU_RUN)" = '1' ]; then  \
 		echo ""; \
 		echo "* Gen NOR Hex : $(SPI_HEX)"; \
