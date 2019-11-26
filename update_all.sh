@@ -42,7 +42,7 @@ warn_up_ok()
 BOOTROM=bootRom.bin
 XBOOT=xboot.img
 UBOOT=u-boot.img
-ECOS=ecos.img
+NONOS=rom.img
 LINUX=uImage
 VMLINUX=            # Use compressed uImage
 #VMLINUX=vmlinux    # Use uncompressed uImage (qkboot + uncompressed vmlinux)
@@ -63,7 +63,7 @@ elif [ "$pf_type" = "x" ];then
 	./update_me.sh ../boot/xboot/bin/$XBOOT   && warn_up_ok $XBOOT
 fi
 ./update_me.sh ../boot/uboot/$UBOOT  && warn_up_ok $UBOOT
-#./update_me.sh ../ecos/bin/$ECOS  && warn_up_ok $ECOS
+./update_me.sh ../nonos/Bchip-non-os/bin/$NONOS  && warn_up_ok $NONOS
 
 if [ "$VMLINUX" = "" ];then
 	./update_me.sh ../$KPATH/arch/arm/boot/$LINUX  || warn_no_up $LINUX
@@ -105,7 +105,7 @@ dd if=bin/$XBOOT       of=bin/$IMG_OUT conv=notrunc bs=1k seek=64
 dd if=bin/dtb.img      of=bin/$IMG_OUT conv=notrunc bs=1k seek=128
 dd if=bin/$UBOOT       of=bin/$IMG_OUT conv=notrunc bs=1k seek=256
 if [ "$BOOT_KERNEL_FROM_TFTP" != "1" ]; then
-	#dd if=bin/$ECOS        of=bin/$IMG_OUT conv=notrunc bs=1M seek=1
+	dd if=bin/$NONOS       of=bin/$IMG_OUT conv=notrunc bs=1M seek=1
 	dd if=bin/$LINUX       of=bin/$IMG_OUT conv=notrunc bs=1M seek=6
 fi
 
@@ -135,7 +135,7 @@ if [ "$ZEBU_RUN" = "1" ];then
 	rm -f $ZMEM_HEX
 	#        in               out           in_skip     DRAM_off
 	$B2ZMEM  bin/$XBOOT       $ZMEM_HEX     0x0       0x0001000             $DXTOR # 4KB
-	#$B2ZMEM  bin/$ECOS        $ZMEM_HEX     0x0       0x0010000             $DXTOR # 64KB
+	$B2ZMEM  bin/$NONOS       $ZMEM_HEX     0x0       0x0010000             $DXTOR # 64KB
 	$B2ZMEM  bin/$UBOOT       $ZMEM_HEX     0x0       0x0200000             $DXTOR # 2MB  (uboot before relocation)
 	$B2ZMEM  bin/dtb.img      $ZMEM_HEX     0x0       $((0x0300000 - 0x40)) $DXTOR # 3MB - 64
 	$B2ZMEM  bin/$LINUX       $ZMEM_HEX     0x0       $((0x0308000 - 0x40)) $DXTOR # 3MB + 32KB - 64
