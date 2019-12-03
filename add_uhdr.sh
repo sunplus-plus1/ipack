@@ -6,13 +6,14 @@
 # $4: arm or riscv
 # $5: load address    (optional)
 # $6: execute address (optional)
-
+# $7: vmlinux used type=kernel
 NAME="$1"
 SRC="$2"
 OUTPUT="$3"
 ARCH="$4"
 LADDR=$5
 RADDR=$6
+type=$7
 
 ####################
 # check if mkimage is available?
@@ -66,6 +67,10 @@ fi
 if [ ! -f "$SRC" ];then
 	echo "Not found source image: $SRC"
 	exit 1
+fi
+
+if [ ! -z "$type" ];then
+	TYPE=$7
 fi
 
 $MKIMAGE -A $ARCH -O linux -T $TYPE -C none -a $LADDR -e $RADDR -n $NAME -d $SRC $OUTPUT

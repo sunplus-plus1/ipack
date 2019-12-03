@@ -2,15 +2,16 @@
 
 BIN        := bin
 SPI_ALL    := spi_all.bin
-SPI_HEX    := Q628_run.hex
+SPI_ARM_HEX    := Q628_run.hex
 CFG        := pack.conf
 ISP_IMG    := ispbooot.BIN
 EMMC_BOOT1 := emmc_boot1.hex
 EMMC_USER  := emmc_user0.hex
+SPI_RISCV_HEX := I143_run.hex
 
 BOOT_KERNEL_FROM_TFTP ?= 0
 TFTP_SERVER_PATH ?= 0
-ARCH_IS_ARM ?= 0
+ARCH_IS_RISCV ?= 0
 all: $(SPI_ALL)
 
 config:
@@ -18,11 +19,16 @@ config:
 
 $(SPI_ALL):
 	make config
-	bash ./update_all.sh $(SPI_ALL) $(ZEBU_RUN) $(BOOT_KERNEL_FROM_TFTP) $(ARCH_IS_ARM) 
+	bash ./update_all.sh $(SPI_ALL) $(ZEBU_RUN) $(BOOT_KERNEL_FROM_TFTP) $(ARCH_IS_RISCV) 
 	@if [ "$(ZEBU_RUN)" = '1' ]; then  \
 		echo ""; \
-		echo "* Gen NOR Hex : $(SPI_HEX)"; \
-		./tools/gen_hex.sh $(BIN)/$(SPI_ALL) $(BIN)/$(SPI_HEX); \
+		if [ "$(ARCH_IS_RISCV)" = '1' ]; then  \
+			echo "* Gen NOR Hex : $(SPI_RISCV_HEX)" ;\
+			./tools/gen_hex.sh $(BIN)/$(SPI_ALL) $(BIN)/$(SPI_RISCV_HEX) ;\
+		else \
+			echo "* Gen NOR Hex : $(SPI_ARM_HEX)" ;\
+			./tools/gen_hex.sh $(BIN)/$(SPI_ALL) $(BIN)/$(SPI_ARM_HEX) ;\
+		fi ;\
 	fi
 	@if [ "$(BOOT_KERNEL_FROM_TFTP)" = '1' ]; then \
 		./copy2tftp.sh $(TFTP_SERVER_PATH); \
