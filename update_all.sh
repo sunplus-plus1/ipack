@@ -1,7 +1,8 @@
 #./update_me.sh <source_img>
 
 export PATH="../crossgcc/armv5-eabi--glibc--stable/bin/:$PATH"
-
+export PATH="../crossgcc/riscv64-sifive-linux-gnu/bin/:$PATH"
+export PATH="../crossgcc/riscv64-unknown-elf/bin/:$PATH"
 
 IMG_OUT=$1
 ZEBU_RUN=$2
@@ -76,11 +77,12 @@ else
 	echo "* Create $LINUX from $VMLINUX"
 	echo "*******************************"
 	if [ "$ARCH_IS_RISCV" = "1" ]; then	
- 	 /home/haiq.tang/code/crossgcc/riscv64-sifive-linux-gnu/bin/riscv64-sifive-linux-gnu-objcopy -O binary -S ./bin/$VMLINUX bin/$VMLINUX.bin
-	 ./add_uhdr.sh linux-`date +%Y%m%d-%H%M%S` bin/$VMLINUX.bin bin/$LINUX riscv 0xA0200000 0xA0200000 kernel	 
+ 	 riscv64-sifive-linux-gnu-objcopy -O binary -S ./bin/$VMLINUX bin/$VMLINUX.bin
+	 #./add_uhdr.sh linux-`date +%Y%m%d-%H%M%S` bin/$VMLINUX.bin bin/$LINUX riscv 0xA0200000 0xA0200000 kernel    #for xboot--uboot--kernel
+	 ./add_uhdr.sh linux-`date +%Y%m%d-%H%M%S` bin/$VMLINUX.bin bin/$LINUX riscv 0xA0200000 0xA0200000 	#for xboot--kernel
 	else	
 	  armv5-glibc-linux-objcopy -O binary -S bin/$VMLINUX bin/$VMLINUX.bin
-	 ./add_uhdr.sh linux-`date +%Y%m%d-%H%M%S` bin/$VMLINUX.bin bin/$LINUX arm 0x308000 0x308000		
+	 ./add_uhdr.sh linux-`date +%Y%m%d-%H%M%S` bin/$VMLINUX.bin bin/$LINUX arm 0x308000 0x308000
 	fi
 fi
 
@@ -102,7 +104,8 @@ if [ "$DTB" != "" ];then
 fi
 
 if [ "$ARCH_IS_RISCV" = "1" ]; then
-	./update_me.sh ../freertos/build/$FREEROTS.bin  && warn_up_ok $FREEROTS
+	./update_me.sh ../freertos/build/FreeRTOS-simple.elf  && warn_up_ok $FREEROTS
+	riscv64-sifive-linux-gnu-objcopy -O binary -S ./bin/FreeRTOS-simple.elf bin/$FREEROTS.bin
 	./add_uhdr.sh freertos-`date +%Y%m%d-%H%M%S` bin/$FREEROTS.bin bin/$FREEROTS.img riscv
 fi
 echo "* Check image..."
@@ -131,11 +134,11 @@ dd if=bin/$UBOOT   	   of=bin/$IMG_OUT conv=notrunc bs=1k seek=256
 
 if [ "$BOOT_KERNEL_FROM_TFTP" != "1" ]; then
 	#dd if=bin/$ECOS        of=bin/$IMG_OUT conv=notrunc bs=1M seek=1
-	dd if=bin/$LINUX       of=bin/$IMG_OUT conv=notrunc bs=1M seek=6
+	dd if=bin/$LINUX       of=bin/$IMG_OUT conv=notrunc bs=1M seek=7
 fi
 if [ "$ARCH_IS_RISCV" = "1" ]; then
 dd if=bin/initramfs.img       of=bin/$IMG_OUT conv=notrunc bs=1M seek=2
-dd if=bin/$FREEROTS.img       of=bin/$IMG_OUT conv=notrunc bs=1k seek=15360   #1.5M
+dd if=bin/$FREEROTS.img       of=bin/$IMG_OUT conv=notrunc bs=1k seek=1536   #1.5M
 fi
 
 ls -lh bin/$IMG_OUT
@@ -177,8 +180,7 @@ if [ "$ZEBU_RUN" = "1" ];then
 	$B2ZMEM  bin/$UBOOT       	$ZMEM_HEX     0x0       $((0x0100000 - 0x40)) 	$DXTOR # 1MB - 64 (OpenSBI start 0x1D0000)
 	$B2ZMEM  bin/dtb.img     	$ZMEM_HEX     0x0       $((0x01F0000 - 0x40)) 			$DXTOR # 1M + 960KB
 	$B2ZMEM  bin/$LINUX      	$ZMEM_HEX     0x0       $((0x0200000 - 0x40)) 	$DXTOR # 2MB - 64	
-	$B2ZMEM	bin/initramfs.img	$ZMEM_HEX     0x0		$((0x02000000 - 0x40))	$DXTOR
-	$B2ZMEM  bin/$UBOOT       	$ZMEM_HEX     0x0       0x03F00000             	$DXTOR # 31MB (uboot after relocation)
+	$B2ZMEM  bin/initramfs.img	$ZMEM_HEX     0x0		$((0x02000000 - 0x40))	$DXTOR
 	fi
 
 	
