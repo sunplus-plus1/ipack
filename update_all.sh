@@ -52,7 +52,6 @@ VMLINUX=vmlinux    	 # Use uncompressed uImage (qkboot + uncompressed vmlinux)
 DTB=dtb
 FREEROTS=freertos
 OPENSBI_KERNEL=OpenSBI_Kernel.img
-
 KPATH=linux/kernel/
 
 # Use uncompressed version first
@@ -79,7 +78,6 @@ else
 	if [ "$ARCH_IS_RISCV" = "1" ]; then	
  	 riscv64-sifive-linux-gnu-objcopy -O binary -S ./bin/$VMLINUX bin/$VMLINUX.bin
 	 ./add_uhdr.sh linux-`date +%Y%m%d-%H%M%S` bin/$VMLINUX.bin bin/$LINUX riscv 0xA0200000 0xA0200000 kernel    #for xboot--uboot--kernel
-	 #./add_uhdr.sh linux-`date +%Y%m%d-%H%M%S` bin/$VMLINUX.bin bin/$LINUX riscv 0xA0200000 0xA0200000 	#for xboot--kernel
 	else	
 	  armv5-glibc-linux-objcopy -O binary -S bin/$VMLINUX bin/$VMLINUX.bin
 	 ./add_uhdr.sh linux-`date +%Y%m%d-%H%M%S` bin/$VMLINUX.bin bin/$LINUX arm 0x308000 0x308000
@@ -113,13 +111,16 @@ echo "* Check image..."
 #exit_no_file bin/$BOOTROM
 exit_no_file bin/$XBOOT
 
+
 if [ "$ARCH_IS_RISCV" = "1" ]; then
-	if [ -f bin/$OPENSBI_KERNEL ]; then
+	if [ -f ../boot/xboot/bin/$OPENSBI_KERNEL ]; then
+		rm -f bin/$OPENSBI_KERNEL
+		./update_me.sh ../boot/xboot/bin/$OPENSBI_KERNEL && warn_up_ok $OPENSBI_KERNEL 
+		./add_uhdr.sh linux-`date +%Y%m%d-%H%M%S` bin/$VMLINUX.bin bin/$LINUX riscv 0xA0200000 0xA0200000 	#for xboot--kernel
 		echo "####use opensbi_kernel file replace uboot"
 		UBOOT=$OPENSBI_KERNEL   	   
 	fi
 fi
-
 
 echo ""
 echo "* Gen NOR image: $IMG_OUT ..."
@@ -192,9 +193,4 @@ if [ "$ZEBU_RUN" = "1" ];then
 		exit 1
 	fi
 fi
-if [ "$ARCH_IS_RISCV" = "1" ]; then
-	if [ -f bin/$OPENSBI_KERNEL ]; then
-		echo "####delete the opensbi_kernel file: $OPENSBI_KERNEL"
-		rm -f bin/$OPENSBI_KERNEL  
-	fi
-fi
+
