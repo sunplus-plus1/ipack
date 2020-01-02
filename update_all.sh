@@ -181,7 +181,7 @@ if [ "$ZEBU_RUN" = "1" ];then
 	$B2ZMEM  bin/$UBOOT       	$ZMEM_HEX     0x0       $((0x0100000 - 0x40)) 	$DXTOR # 1MB - 64 (OpenSBI start 0x1D0000)
 	$B2ZMEM  bin/dtb.img     	$ZMEM_HEX     0x0       $((0x01F0000 - 0x40)) 			$DXTOR # 1M + 960KB
 	$B2ZMEM  bin/$LINUX      	$ZMEM_HEX     0x0       $((0x0200000 - 0x40)) 	$DXTOR # 2MB - 64	
-	$B2ZMEM  bin/initramfs.img	$ZMEM_HEX     0x0		$((0x02000000 - 0x40))	$DXTOR
+	#$B2ZMEM  bin/initramfs.img	$ZMEM_HEX     0x0		$((0x02000000 - 0x40))	$DXTOR
 	fi
 
 	
